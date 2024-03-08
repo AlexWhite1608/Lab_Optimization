@@ -1,3 +1,6 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
 class GradientType:
 
     """
@@ -49,9 +52,70 @@ class GradientDescentMethod:
 
     """
 
-    def __init__(self, method_type):
-        self.type = method_type
+    """ def __init__(self, method_type):
+        self.type = method_type """
 
-    # metodi privati con __
-    def __gradient_descent(self):
+    """ def gradient_descent(self, problem, type, tol=1e-6, max_iter=1000):
+
+        # problem parameters
+        x_0 = problem.x0
+        f = problem.obj(x)
+
+        x = x_0
+        for i in range(max_iter):
+            gradient = problem.grad(x)
+            if np.linalg.norm(gradient) < tol:
+                break
+            x = self.__method(x, gradient, type)
+
+        return x, i + 1
+    
+    def __method(self, x, gradient, type: GradientType):
+        if(type == GradientType.CONSTANT_STEPSIZE):
+            pass
+        elif(type == GradientType.ARMIJO_LS):
+            pass
+        elif(type == GradientType.ARMIJO_GOLDSTEIN):
+            pass
+        elif(type == GradientType.WOLFE_LS):
+            pass
+        elif(type == GradientType.ARMIJO_NON_MONOTONE):
+            pass
+        elif(type == GradientType.BARZILAI_BORWEIN):
+            pass """
+
+    def __init__(self, problem, tol=1e-6, max_iter=1000):
+        
+        # problem parameters
+        self.problem = problem
+        self.x0 = problem.x0
+        self.f = problem.obj(self.x0)
+
+        # convergence settings
+        self.tol = tol
+        self.max_iter = max_iter
         pass
+
+    def gradient_descent_const(self, learning_rate=0.01, plotting=True):
+        x = self.x0
+        for i in range(self.max_iter):
+            gradient = self.problem.grad(x)
+            if np.linalg.norm(gradient) < self.tol:
+                break
+            x = x - learning_rate * gradient
+
+            print(f"Iteration {i+1}, x: {x}")
+
+            # plotting
+            if plotting:
+                #TODO: plotting dinamico
+                pass
+
+        return x, i + 1
+    
+    def __plot(self, x, y, current_pos):
+        plt.plot(x, y)
+        plt.scatter(current_pos[0], current_pos[1], color='red')
+        plt.pause(0.001)
+        plt.clf()
+
