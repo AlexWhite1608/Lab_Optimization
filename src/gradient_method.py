@@ -38,20 +38,6 @@ class GradientType:
 
 class GradientDescentMethod:
 
-    """
-    Class that contains the gradient descent method implementation with all the different variants specified by
-    the type attribute.
-
-    Attributes
-    ----------
-    type : GradientType
-        type of gradient descend
-
-    Methods
-    -------
-
-    """
-
     """ def __init__(self, method_type):
         self.type = method_type """
 
@@ -96,6 +82,7 @@ class GradientDescentMethod:
         self.max_iter = max_iter
         pass
 
+    # GRADIENTE COSTANTE
     def gradient_descent_const(self, learning_rate=0.01, plotting=True):
         x = self.x0
         for i in range(self.max_iter):
@@ -106,16 +93,60 @@ class GradientDescentMethod:
 
             print(f"Iteration {i+1}, x: {x}")
 
-            # plotting
+            #TODO: plotting dinamico
             if plotting:
-                #TODO: plotting dinamico
                 pass
 
         return x, i + 1
     
+    # LS ARMIJO
+    def gradient_descent_armijo(self, alpha=0.5, delta=0.5, gamma=0.5, plotting=False):
+        x = self.x0
+        for i in range(self.max_iter):
+            gradient = self.problem.grad(x)
+            if np.linalg.norm(gradient) < self.tol:
+                break
+            step_size = self.__armijo_ls(x, gradient, alpha, delta, gamma)
+
+            current_pos = x
+            x = x - step_size * gradient
+
+            print(f"Iteration {i+1}, (x,y): {x}")
+
+            #TODO: plotting dinamico
+            if plotting:
+                self.__plot(x=x[0], y=x[1], current_pos=current_pos)
+
+        return x, i + 1
+
+    # Armijo LineSearch 
+    def __armijo_ls(self, x, gradient, alpha, delta, gamma):
+        
+        while self.problem.obj(x - alpha * gradient) > self.problem.obj(x) - gamma * alpha * np.linalg.norm(gradient)**2:
+            alpha *= delta
+        return alpha
+
+    # Plotting method
     def __plot(self, x, y, current_pos):
-        plt.plot(x, y)
-        plt.scatter(current_pos[0], current_pos[1], color='red')
-        plt.pause(0.001)
-        plt.clf()
+        # Genera un meshgrid per visualizzare la funzione obiettivo
+        x_range = np.linspace(np.min(x) - 1, np.max(x) + 1, 100)
+        y_range = np.linspace(np.min(y) - 1, np.max(y) + 1, 100)
+        X, Y = np.meshgrid(x_range, y_range)
+        Z = self.problem.obj(np.array([X, Y]))  # Converti [X, Y] in un array numpy
+
+        # Plot della superficie della funzione obiettivo
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        ax.plot_surface(X, Y, Z, cmap='viridis')
+
+        # Plot del percorso della ricerca del minimo
+        ax.scatter(x, y, self.problem.obj([x, y]), color='red', s=50, label='Current Position')
+        ax.scatter(current_pos[0], current_pos[1], self.problem.obj(current_pos), color='blue', s=50, label='Next Position')
+        
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
+        ax.set_zlabel('Objective Function Value')
+        ax.legend()
+
+        plt.show()
 

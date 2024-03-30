@@ -1,14 +1,20 @@
 from gradient_method import GradientDescentMethod
 import pycutest
 
+import matplotlib.pyplot as plt
+
 def main():
 
-    problem = pycutest.import_problem('ROSENBR')
-    gradient_descend = GradientDescentMethod(problem=problem, max_iter=100)
+    # problem import
+    problem = pycutest.import_problem('CHNRSNBM')
 
-    x, iters = gradient_descend.gradient_descent_const(learning_rate=0.01)
+    # choose the method
+    gradient_descend = GradientDescentMethod(problem=problem, max_iter=1000)
 
-    print("Found minimum x = %s after %g iterations" % (str(x), iters))
+    # results
+    x, iters = gradient_descend.gradient_descent_armijo(alpha=0.5, delta=0.3, gamma=0.5, plotting=False)
+
+    print("Minimum @ %s after %s iterations" % (str(x), str(iters)))
 
 if __name__ == "__main__":
     main()
