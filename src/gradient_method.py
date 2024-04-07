@@ -73,80 +73,80 @@ class GradientDescentMethod:
     def __init__(self, problem, tol=1e-6, max_iter=1000):
         
         # problem parameters
-        self.problem = problem
-        self.x0 = problem.x0
-        self.f = problem.obj(self.x0)
+        self._problem = problem
+        self._x0 = problem.x0
+        self._f = problem.obj(self._x0)
 
         # convergence settings
-        self.tol = tol
-        self.max_iter = max_iter
+        self._tol = tol
+        self._max_iter = max_iter
         pass
 
-    # GRADIENTE COSTANTE
-    def gradient_descent_const(self, learning_rate=0.01, plotting=True):
-        x = self.x0
-        for i in range(self.max_iter):
-            gradient = self.problem.grad(x)
-            if np.linalg.norm(gradient) < self.tol:
+    # ALGORITMO GRADIENTE COSTANTE
+    def gradient_descent_const(self, learning_rate=0.01):
+        x = self._x0
+        for i in range(self._max_iter):
+            gradient = self._problem.grad(x)
+            if np.linalg.norm(gradient) < self._tol:
                 break
             x = x - learning_rate * gradient
 
             print(f"Iteration {i+1}, x: {x}")
 
-            #TODO: plotting dinamico
-            if plotting:
-                pass
-
         return x, i + 1
     
-    # LS ARMIJO
-    def gradient_descent_armijo(self, alpha=0.5, delta=0.5, gamma=0.5, plotting=False):
-        x = self.x0
-        for i in range(self.max_iter):
-            gradient = self.problem.grad(x)
-            if np.linalg.norm(gradient) < self.tol:
+    # ALGORITMO LS ARMIJO
+    def gradient_descent_armijo(self, delta_k=0.5, delta=0.5, gamma=0.5):
+        x = self._x0
+        for i in range(self._max_iter):
+            gradient = self._problem.grad(x)
+            if np.linalg.norm(gradient) < self._tol:
                 break
-            step_size = self.__armijo_ls(x, gradient, alpha, delta, gamma)
+            step_size = self.__armijo_ls(x, gradient, delta_k, delta, gamma)
 
-            current_pos = x
             x = x - step_size * gradient
 
             print(f"Iteration {i+1}, (x,y): {x}")
 
-            #TODO: plotting dinamico
-            if plotting:
-                self.__plot(x=x[0], y=x[1], current_pos=current_pos)
+        return x, i + 1
+    
+    # ALGORITMO LS ARMIJO-GOLDSTEIN
+    def gradient_descent_armijo_goldstein(self, delta_k=0.5, delta=0.5, gamma1=0.5, gamma2=0.5):
+        x = self._x0
+        for i in range(self._max_iter):
+            gradient = self._problem.grad(x)
+            if np.linalg.norm(gradient) < self._tol:
+                break
+            step_size = self.__armijo_goldstein_ls(x, gradient, delta_k, delta, gamma1, gamma2)
+
+            x = x - step_size * gradient
+
+            print(f"Iteration {i+1}, (x,y): {x}")
 
         return x, i + 1
-
+    
     # Armijo LineSearch 
-    def __armijo_ls(self, x, gradient, alpha, delta, gamma):
-        
-        while self.problem.obj(x - alpha * gradient) > self.problem.obj(x) - gamma * alpha * np.linalg.norm(gradient)**2:
+    def __armijo_ls(self, x, gradient, delta_k, delta, gamma):
+        alpha = delta_k
+        while self._problem.obj(x - alpha * gradient) > self._problem.obj(x) - gamma * alpha * np.linalg.norm(gradient)**2:
             alpha *= delta
+
         return alpha
 
-    # Plotting method
-    def __plot(self, x, y, current_pos):
-        # Genera un meshgrid per visualizzare la funzione obiettivo
-        x_range = np.linspace(np.min(x) - 1, np.max(x) + 1, 100)
-        y_range = np.linspace(np.min(y) - 1, np.max(y) + 1, 100)
-        X, Y = np.meshgrid(x_range, y_range)
-        Z = self.problem.obj(np.array([X, Y]))  # Converti [X, Y] in un array numpy
+    # Armijo-Goldstein LineSearch 
+    def __armijo_goldstein_ls(self, x, gradient, delta_k, delta, gamma1, gamma2):
+        alpha = delta_k
+        while self._problem.obj(x - alpha * gradient) > self._problem.obj(x) - gamma1 * alpha * np.linalg.norm(gradient)**2:
+            alpha *= delta
 
-        # Plot della superficie della funzione obiettivo
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        ax.plot_surface(X, Y, Z, cmap='viridis')
-
-        # Plot del percorso della ricerca del minimo
-        ax.scatter(x, y, self.problem.obj([x, y]), color='red', s=50, label='Current Position')
-        ax.scatter(current_pos[0], current_pos[1], self.problem.obj(current_pos), color='blue', s=50, label='Next Position')
+        if alpha < delta_k:
+            return alpha
         
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        ax.set_zlabel('Objective Function Value')
-        ax.legend()
+        # Goldstein conditions
+        goldstein_condition_1 = self._problem.obj(x - alpha * gradient) < self._problem.obj(x) - gamma2 * alpha * np.linalg.norm(gradient)**2 
+        goldstein_condition_2 = self._problem.obj(x - (alpha/delta) * gradient) < np.min([self._problem.obj(x - alpha * gradient), self._problem.obj(x) + gamma1 * (alpha/delta)*np.linalg.norm(gradient)**2])
 
-        plt.show()
-
+        while goldstein_condition_1 and goldstein_condition_2:
+            alpha /= delta
+        
+        return alpha
