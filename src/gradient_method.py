@@ -83,7 +83,7 @@ class GradientDescentMethod:
         pass
 
     # ALGORITMO GRADIENTE COSTANTE
-    def gradient_descent_const(self, learning_rate=0.01):
+    def gd_const(self, learning_rate=0.01):
         x = self._x0
         for i in range(self._max_iter):
             gradient = self._problem.grad(x)
@@ -96,7 +96,7 @@ class GradientDescentMethod:
         return x, i + 1
     
     # ALGORITMO LS ARMIJO
-    def gradient_descent_armijo(self, delta_k=0.5, delta=0.5, gamma=0.5):
+    def gd_armijo(self, delta_k=0.5, delta=0.5, gamma=0.5):
         x = self._x0
         for i in range(self._max_iter):
             gradient = self._problem.grad(x)
@@ -111,7 +111,7 @@ class GradientDescentMethod:
         return x, i + 1
     
     # ALGORITMO LS ARMIJO-GOLDSTEIN
-    def gradient_descent_armijo_goldstein(self, delta_k=0.5, delta=0.5, gamma1=0.5, gamma2=0.5):
+    def gd_goldstein(self, delta_k=0.5, delta=0.5, gamma1=0.5, gamma2=0.5):
         x = self._x0
         for i in range(self._max_iter):
             gradient = self._problem.grad(x)
@@ -126,7 +126,7 @@ class GradientDescentMethod:
         return x, i + 1
     
     # ALGORITMO LS WOLFE (ALGW2)
-    def gradient_descent_wolfe(self, gamma, sigma):
+    def gd_wolfe(self, gamma, sigma):
         x = self._x0
         for i in range(self._max_iter):
             gradient = self._problem.grad(x)
@@ -140,12 +140,15 @@ class GradientDescentMethod:
 
         return x, i + 1
     
+    def gd_armijo_non_monotone(self, delta_k=0.5, delta=0.5, gamma=0.5):
+        pass
+    
     # Wolfe LineSearch
     def __wolfe_ls(self, x, gradient, gamma, sigma, alpha_l=0, alpha_u=100):
         while True:
             alpha = np.random.uniform(alpha_l, alpha_u)
             
-            obj_alpha = self._problem.obj(x + alpha * gradient)
+            obj_alpha = self._problem.obj(x - alpha * gradient)
             grad_alpha = np.linalg.norm(self._problem.grad(x - alpha * gradient)) ** 2
             
             # Condizioni di Wolfe forti
@@ -161,8 +164,6 @@ class GradientDescentMethod:
                 alpha_l = alpha
             elif obj_alpha <= self._problem.obj(x) - gamma * alpha * np.dot(gradient, gradient) and grad_alpha > sigma * np.dot(gradient, gradient):
                 alpha_u = alpha
-        
-
 
     # Armijo LineSearch 
     def __armijo_ls(self, x, gradient, delta_k, delta, gamma):
