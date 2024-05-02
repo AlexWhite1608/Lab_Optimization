@@ -3,6 +3,8 @@ import pycutest
 
 import matplotlib.pyplot as plt
 
+#TODO: usa tabulate!!
+
 def main():
 
     # problem import
@@ -12,9 +14,12 @@ def main():
     # choose the method
     gradient_descend = GradientDescentMethod(problem=problem, max_iter=1000)
 
+    #TODO: parametri estratti con numpy.random.uniform()
+
     # results
-    x, iters = gradient_descend.gradient_descent_armijo_goldstein(delta_k=0.4, delta=0.1, gamma1=0.2, gamma2=0.4)
+    #x, iters = gradient_descend.gradient_descent_armijo_goldstein(delta_k=0.4, delta=0.1, gamma1=0.2, gamma2=0.4)
     #x, iters = gradient_descend.gradient_descent_armijo(delta_k=0.4, delta=0.3, gamma=0.3)
+    x, iters = gradient_descend.gradient_descent_wolfe(gamma=0.2, sigma=0.3)
 
     print("Minimum @ %s after %s iterations" % (str(x), str(iters)))
 

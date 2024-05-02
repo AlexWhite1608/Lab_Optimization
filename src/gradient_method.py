@@ -125,6 +125,45 @@ class GradientDescentMethod:
 
         return x, i + 1
     
+    # ALGORITMO LS WOLFE (ALGW2)
+    def gradient_descent_wolfe(self, gamma, sigma):
+        x = self._x0
+        for i in range(self._max_iter):
+            gradient = self._problem.grad(x)
+            if np.linalg.norm(gradient) < self._tol:
+                break
+            step_size = self.__wolfe_ls(x, gradient, gamma, sigma)
+
+            x = x - step_size * gradient
+
+            print(f"Iteration {i+1}; (x,y): {x}")
+
+        return x, i + 1
+    
+    # Wolfe LineSearch
+    def __wolfe_ls(self, x, gradient, gamma, sigma, alpha_l=0, alpha_u=100):
+        while True:
+            alpha = np.random.uniform(alpha_l, alpha_u)
+            
+            obj_alpha = self._problem.obj(x + alpha * gradient)
+            grad_alpha = np.linalg.norm(self._problem.grad(x - alpha * gradient)) ** 2
+            
+            # Condizioni di Wolfe forti
+            wolfe_1 = obj_alpha <= self._problem.obj(x) + gamma * alpha * np.dot(gradient, gradient)
+            wolfe_2 = grad_alpha <= sigma * np.dot(gradient, gradient)
+            
+            if wolfe_1 or wolfe_2:
+                return alpha
+            
+            if obj_alpha > self._problem.obj(x) - gamma * alpha * np.dot(gradient, gradient):
+                alpha_u = alpha
+            elif obj_alpha <= self._problem.obj(x) - gamma * alpha * np.dot(gradient, gradient) and grad_alpha < sigma * np.dot(gradient, gradient):
+                alpha_l = alpha
+            elif obj_alpha <= self._problem.obj(x) - gamma * alpha * np.dot(gradient, gradient) and grad_alpha > sigma * np.dot(gradient, gradient):
+                alpha_u = alpha
+        
+
+
     # Armijo LineSearch 
     def __armijo_ls(self, x, gradient, delta_k, delta, gamma):
         alpha = delta_k
