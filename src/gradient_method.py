@@ -152,7 +152,7 @@ class GradientDescentMethod:
             grad_alpha = np.linalg.norm(self._problem.grad(x - alpha * gradient)) ** 2
             
             # Condizioni di Wolfe forti
-            wolfe_1 = obj_alpha <= self._problem.obj(x) + gamma * alpha * np.dot(gradient, gradient)
+            wolfe_1 = obj_alpha <= self._problem.obj(x) - gamma * alpha * np.dot(gradient, gradient)
             wolfe_2 = grad_alpha <= sigma * np.dot(gradient, gradient)
             
             if wolfe_1 or wolfe_2:
