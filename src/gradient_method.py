@@ -174,14 +174,13 @@ class GradientDescentMethod:
         x_seq.append(x)
         W = 0
 
+        # Calcolo delle sequenze degli f(x)
         if i == 0:
             values = [self._problem.obj(x_seq[0])]
         else:
             values = [self._problem.obj(x_seq[i - j]) for j in range(1, min(i, M) + 1)]
 
         W = np.max(values)
-        
-        print(f"W: {W}") 
 
         return W
     
