@@ -132,7 +132,7 @@ class GradientDescentMethod:
             gradient = self._problem.grad(x)
             if np.linalg.norm(gradient) < self._tol:
                 break
-            step_size = self.__wolfe_ls(x, gradient, gamma, sigma)
+            step_size = self.__wolfe_ls(x, gradient, gamma, sigma, i)
 
             x = x - step_size * gradient
 
@@ -140,8 +140,50 @@ class GradientDescentMethod:
 
         return x, i + 1
     
+    # ALGORITMO LS ARMIJO NON MONOTONE
     def gd_armijo_non_monotone(self, delta_k=0.5, delta=0.5, gamma=0.5):
-        pass
+        x = self._x0
+        x_seq = [] 
+
+        for i in range(self._max_iter):
+            gradient = self._problem.grad(x)
+            if np.linalg.norm(gradient) < self._tol:
+                break
+            W = self.__get_W(x, i, x_seq)
+            step_size = self.__armijo_nm(x, gradient, delta_k, delta, gamma, W)
+
+            x = x - step_size * gradient
+
+            print(f"Iteration {i+1}; (x,y): {x}")
+
+        return x, i + 1
+
+    # Armijo Non Monotone LineSearch
+    def __armijo_nm(self, x, gradient, delta_k, delta, gamma, W):
+        alpha = delta_k
+        j=0
+
+        while self._problem.obj(x - alpha * gradient) > W - gamma * alpha * np.dot(gradient, gradient):
+            alpha *= delta
+            j += 1
+
+        return alpha
+
+    # Calcola la sequenza dei massimi W per Armijo-NM
+    def __get_W(self, x, i, x_seq, M=3):
+        x_seq.append(x)
+        W = 0
+
+        if i == 0:
+            values = [self._problem.obj(x_seq[0])]
+        else:
+            values = [self._problem.obj(x_seq[i - j]) for j in range(1, min(i, M) + 1)]
+
+        W = np.max(values)
+        
+        print(f"W: {W}") 
+
+        return W
     
     # Wolfe LineSearch
     def __wolfe_ls(self, x, gradient, gamma, sigma, alpha_l=0, alpha_u=100):
