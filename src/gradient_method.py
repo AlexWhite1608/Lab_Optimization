@@ -71,19 +71,40 @@ class GradientDescentMethod:
             pass """
 
     def __init__(self, problem, tol=1e-7, max_iter=1000):
+
+        """
+        Classe che implementa i vari metodi specializzati del gradiente
+
+        Variables:
+            self._problem : Istanza del problema 
+            self._x0 : Punto iniziale
+            self._f : Funzione obiettivo
+            self._tol (float): Tolleranza per l'ottimo
+            self._max_iter (int): Numero massimo di iterazioni degli algoritmi
+        """
         
-        # problem parameters
+        # Parametri del problema
         self._problem = problem
         self._x0 = problem.x0
         self._f = problem.obj(self._x0)
 
-        # convergence settings
+        # Settings
         self._tol = tol
         self._max_iter = max_iter
-        pass
 
-    # ALGORITMO GRADIENTE COSTANTE
+    # Gradiente costante
     def gd_const(self, learning_rate=0.01):
+        """
+        Implementa il metodo del gradiente con tasso di apprendimento costante
+
+        Args:
+            learning_rate (float): Tasso di apprendimento costante
+
+        Returns:
+            x (ndarray): Punto di convergenza
+            iterations (int): Numero di iterazioni eseguite
+        """
+
         x = self._x0
         for i in range(self._max_iter):
             gradient = self._problem.grad(x)
@@ -95,8 +116,21 @@ class GradientDescentMethod:
 
         return x, i + 1
     
-    # ALGORITMO LS ARMIJO
+    # Algoritmo di Armijo
     def gd_armijo(self, delta_k=0.5, delta=0.5, gamma=0.5):
+        """
+        Implementa il metodo del gradiente con ricerca di linea di Armijo
+
+        Args:
+            delta_k (float): Default: 0.5
+            delta (float): Default: 0.5
+            gamma (float): Default: 0.5
+
+        Returns:
+            x (ndarray): Punto di convergenza
+            iterations (int): Numero di iterazioni eseguite
+        """
+
         x = self._x0
         for i in range(self._max_iter):
             gradient = self._problem.grad(x)
@@ -110,8 +144,22 @@ class GradientDescentMethod:
 
         return x, i + 1
     
-    # ALGORITMO LS ARMIJO-GOLDSTEIN
+    # Algoritmo Armijo-Goldstein
     def gd_goldstein(self, delta_k=0.5, delta=0.5, gamma1=0.5, gamma2=0.5):
+        """
+        Implementa il metodo del gradiente con ricerca di linea di Goldstein
+
+        Args:
+            delta_k (float): Default: 0.5
+            delta (float): Default: 0.5
+            gamma1 (float): Default: 0.5
+            gamma2 (float): Default: 0.5
+
+        Returns:
+            x (ndarray): Punto di convergenza.
+            iterations (int): Numero di iterazioni eseguite
+        """
+
         x = self._x0
         for i in range(self._max_iter):
             gradient = self._problem.grad(x)
@@ -125,8 +173,20 @@ class GradientDescentMethod:
 
         return x, i + 1
     
-    # ALGORITMO LS WOLFE (ALGW2)
+    # Algoritmo LineSearch di Wolfe (ALGW2)
     def gd_wolfe(self, gamma, sigma):
+        """
+        Implementa il metodo del gradiente con ricerca di linea di Wolfe (ALGW2)
+
+        Args:
+            gamma (float): Parametro di controllo della condizione di Armijo
+            sigma (float): Parametro di controllo della condizione di curvatura
+
+        Returns:
+            x (ndarray): Punto di convergenza
+            iterations (int): Numero di iterazioni eseguite
+        """
+
         x = self._x0
         for i in range(self._max_iter):
             gradient = self._problem.grad(x)
@@ -140,8 +200,21 @@ class GradientDescentMethod:
 
         return x, i + 1
     
-    # ALGORITMO LS ARMIJO NON MONOTONE
+    # Algoritmo di Armijo non monotono
     def gd_armijo_non_monotone(self, delta_k=0.5, delta=0.5, gamma=0.5):
+        """
+        Implementa il metodo del gradiente con ricerca di linea di Armijo non monotona
+
+        Args:
+            delta_k (float): Parametro per il calcolo del valore iniziale W
+            delta (float): Parametro per il calcolo del valore iniziale W
+            gamma (float): Parametro di controllo per la condizione di Armijo non monotona
+
+        Returns:
+            x (ndarray): Punto di convergenza
+            iterations (int): Numero di iterazioni eseguite
+        """
+
         x = self._x0
         x_seq = [] 
 
@@ -158,8 +231,29 @@ class GradientDescentMethod:
 
         return x, i + 1
     
-    # ALGORITMO LS BARZILAI BORWEIN (technique = {A, B, AB})
+    # Algoritmo Armijo non monotono con formule BB (technique = {A, B, AB})
     def gd_barzilai_borwein(self, technique, armijo_goldstein_params={}, armijo_nm_params={}, sigma_a=1e-4, sigma_b=1e-4, M=15, N=10):
+        """
+        Implementa il metodo del gradiente con ricerca di linea di Barzilai-Borwein
+
+        Args:
+            technique (str): La tecnica per il calcolo di mu, può essere 'A','B' o 'AB'
+            armijo_goldstein_params (dict): Parametri per la ricerca di linea di Goldstein
+            armijo_nm_params (dict): Parametri per la ricerca di linea di Armijo non monotona
+            sigma_a (float): Parametro per il test watchdog.
+            sigma_b (float): Parametro per il test watchdog.
+            M (int): Numero massimo di iterazioni esterne
+            N (int): Numero massimo di iterazioni interne per la ricerca di linea di Barzilai-Borwein
+
+        Returns:
+            x (ndarray): Il punto di convergenza
+            iterations (int): Il numero di iterazioni eseguite
+
+        Note:
+            In base al valore passato al parametro technique si va ad assegnare un valore diverso al parametro mu.
+            Se technique='AB' allora per le iterazioni pari si utilizza la tecnica A, e per quelle dispari la tecnica B
+        """
+
         k = 0
         x = self._x0
         x_seq = []
@@ -225,9 +319,23 @@ class GradientDescentMethod:
 
         return x, k
 
-    
-    # Ricava mu per Armijo_BB 
+    # Ricava mu per Armijo BB 
     def __get_mu(self, s, y, k, technique):
+        """
+        Calcola il valore di mu utilizzando le formule di Barzilai-Borwein a seconda della tecnica specificata
+
+        Args:
+            s (ndarray): La differenza tra i punti x_k e x_{k-1}
+            y (ndarray): La differenza tra i gradienti di x_k e x_{k-1}
+            k (int): Numero di iterazione corrente
+            technique (str): La tecnica per il calcolo di mu, può essere 'A', 'B' o 'AB'
+
+        Returns:
+            float: Il valore di mu calcolato
+
+        Raises:
+            ValueError: Se la tecnica specificata non è valida
+        """
 
         # TODO: verifica che mu stia dentro i valori imposti da epsilon=1e-10
 
@@ -236,6 +344,7 @@ class GradientDescentMethod:
         elif technique == 'B':
             return np.dot(y, y) / np.dot(s, y)
         elif technique == 'AB':
+
             # Se k (iterazione) è pari allora faccio A, altrimenti B
             if k % 2 == 0:
                 return np.dot(s, y) / np.dot(s, s)
@@ -244,15 +353,44 @@ class GradientDescentMethod:
         else:
             raise ValueError("Invalid mu technique")
 
-    # Watchdog per Armijo_BB
+    # Watchdog per Armijo BB
     def __watchdog_test(self, z_new, x, sigma_a, sigma_b, W):
+        """
+        Esegue il test watchdog per la ricerca di linea
+
+        Args:
+            z_new (ndarray): Il nuovo punto candidato ottenuto dalla ricerca di linea
+            x (ndarray): Il punto corrente
+            sigma_a (float): Parametro di controllo per il gradiente
+            sigma_b (float): Parametro di controllo per la differenza tra punti
+            W (float): Il valore massimo della funzione obiettivo nel punto corrente
+
+        Returns:
+            bool: True se il test è soddisfatto, False altrimenti
+        """
+
         grad_norm = np.linalg.norm(self._problem.grad(z_new))
         diff_norm = np.linalg.norm(z_new - x)
 
         return self._problem.obj(z_new) <= W - max(sigma_a * grad_norm, sigma_b * diff_norm)
 
-    # Armijo Non Monotone LineSearch
+    # Armijo non monotono LineSearch
     def __armijo_nm(self, x, gradient, delta_k, delta, gamma, W):
+        """
+    Implementa la ricerca di linea di Armijo non monotona
+
+    Args:
+            x (ndarray): Il punto corrente
+            gradient (ndarray): Il gradiente nel punto corrente
+            delta_k (float): Passo iniziale per la ricerca di linea
+            delta (float): Fattore di riduzione del passo
+            gamma (float): Parametro di riduzione per la funzione obiettivo
+            W (float): Il valore massimo della funzione obiettivo nel punto corrente
+
+        Returns:
+            float: Il passo alpha ottenuto dalla ricerca di linea
+        """
+
         alpha = delta_k
         j=0
 
@@ -262,8 +400,21 @@ class GradientDescentMethod:
 
         return alpha
 
-    # Calcola la sequenza dei massimi W per Armijo-NM
+    # Calcola i massimi W per Armijo non monotono
     def __get_W(self, x, i, x_seq, M=3):
+        """
+        Calcola il valore di W
+
+        Args:
+            x (ndarray): Il punto corrente
+            i (int): Indice dell'iterazione corrente
+            x_seq (list): Lista dei punti visitati nelle iterazioni precedenti
+            M (int, optional): Numero massimo di passi a ritroso per i valori precedenti
+
+        Returns:
+            float: Il valore del parametro W
+        """
+
         x_seq.append(x)
         W = 0
 
@@ -279,6 +430,21 @@ class GradientDescentMethod:
     
     # Wolfe LineSearch
     def __wolfe_ls(self, x, gradient, gamma, sigma, alpha_l=0, alpha_u=100):
+        """
+        Implementa la ricerca di linea secondo le condizioni di Wolfe
+
+        Args:
+            x (ndarray): Il punto corrente
+            gradient (ndarray): Il gradiente della funzione obiettivo nel punto corrente
+            gamma (float): Parametro per la condizione di Wolfe
+            sigma (float): Parametro per la condizione di Wolfe
+            alpha_l (float, optional): Limite inferiore per la ricerca di linea. Default: 0
+            alpha_u (float, optional): Limite superiore per la ricerca di linea. Default: 100
+
+        Returns:
+            float: Il passo di ricerca di linea che soddisfa le condizioni di Wolfe
+        """
+
         while True:
             alpha = np.random.uniform(alpha_l, alpha_u)
             
@@ -301,6 +467,20 @@ class GradientDescentMethod:
 
     # Armijo LineSearch 
     def __armijo_ls(self, x, gradient, delta_k, delta, gamma):
+        """
+        Implementa la ricerca di linea utilizzando la regola dell'Armijo
+
+        Args:
+            x (ndarray): Il punto corrente
+            gradient (ndarray): Il gradiente della funzione obiettivo nel punto corrente
+            delta_k (float): Passo iniziale per la ricerca di linea
+            delta (float): Fattore di riduzione del passo
+            gamma (float): Parametro per la regola dell'Armijo
+
+        Returns:
+            float: Il passo di ricerca di linea che soddisfa la regola dell'Armijo
+        """
+
         alpha = delta_k
         while self._problem.obj(x - alpha * gradient) > self._problem.obj(x) - gamma * alpha * np.linalg.norm(gradient)**2:
             alpha *= delta
@@ -309,6 +489,21 @@ class GradientDescentMethod:
 
     # Armijo-Goldstein LineSearch 
     def __armijo_goldstein_ls(self, x, gradient, delta_k, delta, gamma1, gamma2):
+        """
+        Implementa la ricerca di linea utilizzando la regola dell'Armijo con le condizioni di Goldstein
+
+        Args:
+            x (ndarray): Il punto corrente.
+            gradient (ndarray): Il gradiente della funzione obiettivo nel punto corrente
+            delta_k (float): Passo iniziale per la ricerca di linea
+            delta (float): Fattore di riduzione del passo
+            gamma1 (float): Parametro per la regola dell'Armijo
+            gamma2 (float): Parametro per le condizioni di Goldstein
+
+        Returns:
+            float: Il passo di ricerca di linea che soddisfa le condizioni di Goldstein
+        """
+
         alpha = delta_k
         while self._problem.obj(x - alpha * gradient) > self._problem.obj(x) - gamma1 * alpha * np.linalg.norm(gradient)**2:
             alpha *= delta

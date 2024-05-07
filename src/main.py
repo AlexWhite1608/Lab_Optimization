@@ -40,6 +40,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-#Minimum @ [0.99255198 0.98512658] after 1000 iterations
