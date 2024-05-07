@@ -70,7 +70,7 @@ class GradientDescentMethod:
         elif(type == GradientType.BARZILAI_BORWEIN):
             pass """
 
-    def __init__(self, problem, tol=1e-6, max_iter=1000):
+    def __init__(self, problem, tol=1e-7, max_iter=1000):
         
         # problem parameters
         self._problem = problem
@@ -157,6 +157,99 @@ class GradientDescentMethod:
             print(f"Iteration {i+1}; (x,y): {x}")
 
         return x, i + 1
+    
+    # ALGORITMO LS BARZILAI BORWEIN (technique = {A, B, AB})
+    def gd_barzilai_borwein(self, technique, armijo_goldstein_params={}, armijo_nm_params={}, sigma_a=1e-4, sigma_b=1e-4, M=15, N=10):
+        k = 0
+        x = self._x0
+        x_seq = []
+
+        # Inizializza x_k_minus_1 e grad_k_minus_1
+        x_k_minus_1 = x
+        grad_k_minus_1 = self._problem.grad(x)
+
+        # Parametri per ricerca Goldstein per ricavare mu se è nullo
+        delta_k_gs = armijo_goldstein_params['delta_k']
+        delta_gs = armijo_goldstein_params['delta']
+        gamma1_gs = armijo_goldstein_params['gamma1']
+        gamma2_gs = armijo_goldstein_params['gamma2']
+
+        # Parametri per ricerca Armijo nm per ricavare alpha
+        delta_k_nm = armijo_nm_params['delta_k']
+        delta_nm = armijo_nm_params['delta']
+        gamma_nm = armijo_nm_params['gamma']
+
+        while True:
+            gradient = self._problem.grad(x)
+            norm_grad = np.linalg.norm(gradient)
+
+            if norm_grad < self._tol or k >= self._max_iter:
+                break
+
+            z_k = x
+            linesearch = True
+
+            for i in range(N):
+
+                # Calcola i valori di s e y
+                s = z_k - x_k_minus_1
+                grad_k = self._problem.grad(z_k)
+                y = grad_k - grad_k_minus_1
+
+                # Calcola mu utilizzando i valori di s e y e la tecnica fornita in input
+                mu = self.__get_mu(s, y, k, technique)  
+
+                if mu == 0:
+                    mu = self.__armijo_goldstein_ls(delta_k_gs, delta_gs, gamma1_gs, gamma2_gs)  # Ricava mu con Goldstein 
+
+                # Calcola z_new utilizzando il valore di mu
+                z_new = z_k - (1 / mu) * self._problem.grad(z_k)
+
+                # Esegue il test watchdog
+                if self.__watchdog_test(z_new, x, sigma_a, sigma_b, self.__get_W(x, k, x_seq)):
+                    x = z_new
+                    linesearch = False
+                    break
+
+            if linesearch:
+                alpha = self.__armijo_nm(x, gradient, delta_k_nm, delta_nm, gamma_nm, self.__get_W(x, k, x_seq))
+                x = x - alpha * gradient
+
+            # Aggiorna x_k_minus_1 e grad_k_minus_1 per la prossima iterazione
+            x_k_minus_1 = z_k
+            grad_k_minus_1 = gradient
+
+            k += 1
+
+            print(f"Iteration {k}; (x,y): {x}")
+
+        return x, k
+
+    
+    # Ricava mu per Armijo_BB 
+    def __get_mu(self, s, y, k, technique):
+
+        # TODO: verifica che mu stia dentro i valori imposti da epsilon=1e-10
+
+        if technique == 'A':
+            return np.dot(s, y) / np.dot(s, s)
+        elif technique == 'B':
+            return np.dot(y, y) / np.dot(s, y)
+        elif technique == 'AB':
+            # Se k (iterazione) è pari allora faccio A, altrimenti B
+            if k % 2 == 0:
+                return np.dot(s, y) / np.dot(s, s)
+            else:
+                return np.dot(y, y) / np.dot(s, y)
+        else:
+            raise ValueError("Invalid mu technique")
+
+    # Watchdog per Armijo_BB
+    def __watchdog_test(self, z_new, x, sigma_a, sigma_b, W):
+        grad_norm = np.linalg.norm(self._problem.grad(z_new))
+        diff_norm = np.linalg.norm(z_new - x)
+
+        return self._problem.obj(z_new) <= W - max(sigma_a * grad_norm, sigma_b * diff_norm)
 
     # Armijo Non Monotone LineSearch
     def __armijo_nm(self, x, gradient, delta_k, delta, gamma, W):
