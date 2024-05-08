@@ -64,20 +64,19 @@ class GradientDescentTester:
         return results
     
     def print_results_table(self, results):
-        method_names = list(results[next(iter(results))].keys())
-        table_data = []
+        for problem_name, problem_results in results.items():
+            method_names = list(problem_results.keys())
+            table_data = []
 
-        for method_name in method_names:
-            method_results = [method_name]
-
-            for problem_name, problem_results in results.items():
+            for method_name in method_names:
+                method_results = [method_name]
                 solution = problem_results[method_name]['solution']
                 iterations = problem_results[method_name]['iterations']
                 execution_time = problem_results[method_name]['execution_time']
 
                 method_results.extend([solution, iterations, execution_time])
+                table_data.append(method_results)
 
-            table_data.append(method_results)
-
-        print(f"Results for problem: {problem_name}")
-        print(tabulate(table_data, headers=['Method', 'Solution', 'Iterations', 'Execution Time'], tablefmt="simple_grid"))
+            print(f"Results for problem: {problem_name}")
+            print(tabulate(table_data, headers=['Method', 'Solution', 'Iterations', 'Execution Time'], tablefmt="simple_grid"))
+            print("\n")

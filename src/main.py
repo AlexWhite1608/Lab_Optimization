@@ -37,7 +37,7 @@ def main():
     x, iters = gradient_descend.gd_barzilai_borwein(technique='B', armijo_goldstein_params=armijo_goldstein_params, armijo_nm_params=armijo_nm_params) """
 
     problem_instances = {
-            'ROSENBR': pycutest.import_problem('ROSENBR')
+            'ROSENBR': pycutest.import_problem('ROSENBR'),
         }
     
     tester = t.GradientDescentTester(problem_instances)
