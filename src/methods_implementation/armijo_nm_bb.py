@@ -85,7 +85,7 @@ class ArmijoNMBB(gradient.GradientDescentMethod):
             print(f"{self._name}: {k}; (x,y): {x}")
 
         print("----------------------------------------------\n")
-        return x, k
+        return self._problem.obj(x), k
     
     def __get_W(self, x, i, x_seq, M=3):
         x_seq.append(x)

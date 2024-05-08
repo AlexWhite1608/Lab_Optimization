@@ -25,7 +25,7 @@ class WolfeLS(gradient.GradientDescentMethod):
             print(f"{self._name}: {i+1}; (x,y): {x}")
 
         print("----------------------------------------------\n")
-        return x, i + 1
+        return self._problem.obj(x), i + 1
     
     def __wolfe_ls(self, x, gradient):
         while True:

@@ -1,4 +1,6 @@
 from time import time
+from tabulate import tabulate
+import numpy as np
 from methods_implementation import (
     armijo_goldstein,
     armijo_ls,
@@ -8,6 +10,7 @@ from methods_implementation import (
     wolfe_ls,
 )
 
+#TODO: generalizza per bene il passaggio dei parametri!
 class GradientDescentTester:
     
     def __init__(self, problem_instances):
@@ -59,3 +62,22 @@ class GradientDescentTester:
                 }
 
         return results
+    
+    def print_results_table(self, results):
+        method_names = list(results[next(iter(results))].keys())
+        table_data = []
+
+        for method_name in method_names:
+            method_results = [method_name]
+
+            for problem_name, problem_results in results.items():
+                solution = problem_results[method_name]['solution']
+                iterations = problem_results[method_name]['iterations']
+                execution_time = problem_results[method_name]['execution_time']
+
+                method_results.extend([solution, iterations, execution_time])
+
+            table_data.append(method_results)
+
+        print(f"Results for problem: {problem_name}")
+        print(tabulate(table_data, headers=['Method', 'Solution', 'Iterations', 'Execution Time'], tablefmt="simple_grid"))

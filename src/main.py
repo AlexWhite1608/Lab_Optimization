@@ -4,8 +4,6 @@ import tester as t
 
 import matplotlib.pyplot as plt
 
-#TODO: usa tabulate!!
-
 def main():
     """
     # problem import    
@@ -43,7 +41,9 @@ def main():
         }
     
     tester = t.GradientDescentTester(problem_instances)
-    tester.run_all_tests()
+    test_results = tester.run_all_tests()
+
+    tester.print_results_table(test_results)
 
 if __name__ == "__main__":
     main()

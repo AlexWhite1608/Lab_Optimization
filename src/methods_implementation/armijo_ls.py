@@ -22,7 +22,7 @@ class ArmijoLS(gradient.GradientDescentMethod):
             print(f"{self._name}: {i+1}; (x,y): {x}")
 
         print("----------------------------------------------\n")
-        return x, i + 1
+        return self._problem.obj(x), i + 1
 
     def __armijo_ls(self, x, gradient, delta_k, delta, gamma):
         alpha = delta_k
