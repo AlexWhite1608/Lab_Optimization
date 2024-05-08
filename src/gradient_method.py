@@ -1,93 +1,34 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-class GradientType:
 
-    """
-    Class that contains the gradient descent variants.
-
-    Attributes
-    ----------
-    CONSTANT_STEPSIZE : int
-        gradient descent with constant stepsize
-
-    ARMIJO_LS : int
-        gradient descent with Armijo line-search;
-
-    ARMIJO_GOLDSTEIN : int
-        gradient descent with Armijo line-search with expansion (Armijo-Goldstein)
-
-    WOLFE_LS : int
-        gradient descent with Wolfe line-search
-
-    ARMIJO_NON_MONOTONE : int
-        gradient descent with nonmonotone Armijo line-search
-
-    BARZILAI_BORWEIN : int
-        gradient descent with nonmonotone Armijo line-search, with initial stepsize
-        set by the Barzilai-Borwein rule
-
-    """
-
-    CONSTANT_STEPSIZE = 1
-    ARMIJO_LS = 2
-    ARMIJO_GOLDSTEIN = 3
-    WOLFE_LS = 4
-    ARMIJO_NON_MONOTONE = 5
-    BARZILAI_BORWEIN = 6
+# TODO: ELIMINA IL FILE!!
 
 class GradientDescentMethod:
+    """
+    Classe che implementa i vari metodi specializzati del gradiente
 
-    """ def __init__(self, method_type):
-        self.type = method_type """
-
-    """ def gradient_descent(self, problem, type, tol=1e-6, max_iter=1000):
-
-        # problem parameters
-        x_0 = problem.x0
-        f = problem.obj(x)
-
-        x = x_0
-        for i in range(max_iter):
-            gradient = problem.grad(x)
-            if np.linalg.norm(gradient) < tol:
-                break
-            x = self.__method(x, gradient, type)
-
-        return x, i + 1
-    
-    def __method(self, x, gradient, type: GradientType):
-        if(type == GradientType.CONSTANT_STEPSIZE):
-            pass
-        elif(type == GradientType.ARMIJO_LS):
-            pass
-        elif(type == GradientType.ARMIJO_GOLDSTEIN):
-            pass
-        elif(type == GradientType.WOLFE_LS):
-            pass
-        elif(type == GradientType.ARMIJO_NON_MONOTONE):
-            pass
-        elif(type == GradientType.BARZILAI_BORWEIN):
-            pass """
+    Variables:
+        self._problem : Istanza del problema 
+        self._x0 : Punto iniziale
+        self._f : Funzione obiettivo
+        self._tol (float): Tolleranza per l'ottimo
+        self._max_iter (int): Numero massimo di iterazioni degli algoritmi
+    """
 
     def __init__(self, problem, tol=1e-7, max_iter=1000):
-
-        """
-        Classe che implementa i vari metodi specializzati del gradiente
-
-        Variables:
-            self._problem : Istanza del problema 
-            self._x0 : Punto iniziale
-            self._f : Funzione obiettivo
-            self._tol (float): Tolleranza per l'ottimo
-            self._max_iter (int): Numero massimo di iterazioni degli algoritmi
-        """
         
         # Parametri del problema
         self._problem = problem
         self._x0 = problem.x0
         self._f = problem.obj(self._x0)
 
+        # Settings
+        self._tol = tol
+        self._max_iter = max_iter
+
+    def __init__(self, tol=1e-7, max_iter=1000):
+        
         # Settings
         self._tol = tol
         self._max_iter = max_iter
@@ -105,7 +46,7 @@ class GradientDescentMethod:
             iterations (int): Numero di iterazioni eseguite
         """
 
-        x = self._x0
+        x = self._problem.x0
         for i in range(self._max_iter):
             gradient = self._problem.grad(x)
             if np.linalg.norm(gradient) < self._tol:
@@ -131,7 +72,7 @@ class GradientDescentMethod:
             iterations (int): Numero di iterazioni eseguite
         """
 
-        x = self._x0
+        x = self._problem.x0
         for i in range(self._max_iter):
             gradient = self._problem.grad(x)
             if np.linalg.norm(gradient) < self._tol:
@@ -160,7 +101,7 @@ class GradientDescentMethod:
             iterations (int): Numero di iterazioni eseguite
         """
 
-        x = self._x0
+        x = self._problem.x0
         for i in range(self._max_iter):
             gradient = self._problem.grad(x)
             if np.linalg.norm(gradient) < self._tol:
@@ -187,12 +128,12 @@ class GradientDescentMethod:
             iterations (int): Numero di iterazioni eseguite
         """
 
-        x = self._x0
+        x = self._problem.x0
         for i in range(self._max_iter):
             gradient = self._problem.grad(x)
             if np.linalg.norm(gradient) < self._tol:
                 break
-            step_size = self.__wolfe_ls(x, gradient, gamma, sigma, i)
+            step_size = self.__wolfe_ls(x, gradient, gamma, sigma)
 
             x = x - step_size * gradient
 
@@ -215,7 +156,7 @@ class GradientDescentMethod:
             iterations (int): Numero di iterazioni eseguite
         """
 
-        x = self._x0
+        x = self._problem.x0
         x_seq = [] 
 
         for i in range(self._max_iter):
@@ -255,7 +196,7 @@ class GradientDescentMethod:
         """
 
         k = 0
-        x = self._x0
+        x = self._problem.x0
         x_seq = []
 
         # Inizializza x_k_minus_1 e grad_k_minus_1
@@ -486,6 +427,20 @@ class GradientDescentMethod:
             alpha *= delta
 
         return alpha
+    
+    def gd_armijo_goldstein(self, delta_k=0.4, delta=0.1, gamma1=0.2, gamma2=0.4):
+        x = self._problem.x0
+        for i in range(self._max_iter):
+            gradient = self._problem.grad(x)
+            if np.linalg.norm(gradient) < self._tol:
+                break
+            step_size = self.__armijo_goldstein_ls(x, gradient, delta_k, delta, gamma1, gamma2)
+
+            x = x - step_size * gradient
+
+            print(f"Iteration {i+1}, (x,y): {x}")
+
+        return x, i + 1
 
     # Armijo-Goldstein LineSearch 
     def __armijo_goldstein_ls(self, x, gradient, delta_k, delta, gamma1, gamma2):
@@ -519,3 +474,7 @@ class GradientDescentMethod:
             alpha /= delta
         
         return alpha
+    
+    def set_problem(self, problem):
+        self._problem = problem
+        return self
