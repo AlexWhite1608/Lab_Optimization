@@ -3,16 +3,19 @@ import numpy as np
 
 class ArmijoGoldstein(gradient.GradientDescentMethod):
 
-    def __init__(self,  delta_k=0.4, delta=0.1, gamma1=0.2, gamma2=0.4, max_iter=1000):
-        super().__init__(max_iter=max_iter)
-        self._delta_k = delta_k
-        self._delta = delta
-        self._gamma1 = gamma1
-        self._gamma2 = gamma2
+    def __init__(self, parameters):
+        super().__init__()
+        self._delta_k = parameters.get('delta_k')
+        self._delta = parameters.get('delta')
+        self._gamma1 = parameters.get('gamma1')
+        self._gamma2 = parameters.get('gamma2')
         self._name = 'Armijo-Goldstein Line Search'
 
     def optimize(self):
         x = self._problem.x0
+
+        print(f"{self._name}: {self._problem.name}")
+
         for i in range(self._max_iter):
             gradient = self._problem.grad(x)
             if np.linalg.norm(gradient) < self._tol:
@@ -21,9 +24,18 @@ class ArmijoGoldstein(gradient.GradientDescentMethod):
 
             x = x - step_size * gradient
 
+            self._x_history.append(x)
+            self._obj_history.append(self._problem.obj(x))
+
             print(f"{self._name}: {i+1}; (x,y): {x}")
 
         print("----------------------------------------------\n")
+
+        super().plot_results()
+
+        self._x_history = []  
+        self._obj_history = [] 
+
         return self._problem.obj(x), i + 1
 
     def __armijo_goldstein_ls(self, x, gradient, delta_k, delta, gamma1, gamma2):

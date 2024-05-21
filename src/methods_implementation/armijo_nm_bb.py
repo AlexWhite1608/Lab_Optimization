@@ -3,8 +3,8 @@ import numpy as np
 
 class ArmijoNMBB(gradient.GradientDescentMethod):
 
-    def __init__(self,  technique, armijo_goldstein_params={}, armijo_nm_params={}, sigma_a=1e-4, sigma_b=1e-4, M=15, N=10, max_iter=1000):
-        super().__init__(max_iter=max_iter)
+    def __init__(self,  technique, armijo_goldstein_params={}, armijo_nm_params={}, sigma_a=1e-4, sigma_b=1e-4, M=15, N=10):
+        super().__init__()
         self._technique = technique
         self._armijo_goldstein_params = armijo_goldstein_params
         self._armijo_nm_params = armijo_nm_params
@@ -39,6 +39,8 @@ class ArmijoNMBB(gradient.GradientDescentMethod):
         delta_k_nm = self._armijo_nm_params['delta_k']
         delta_nm = self._armijo_nm_params['delta']
         gamma_nm = self._armijo_nm_params['gamma']
+
+        print(f"{self._name}: {self._problem.name}")
 
         while True:
             gradient = self._problem.grad(x)
@@ -82,9 +84,18 @@ class ArmijoNMBB(gradient.GradientDescentMethod):
 
             k += 1
 
+            self._x_history.append(x)
+            self._obj_history.append(self._problem.obj(x))
+
             print(f"{self._name}: {k}; (x,y): {x}")
 
         print("----------------------------------------------\n")
+
+        super().plot_results()
+
+        self._x_history = []  
+        self._obj_history = [] 
+
         return self._problem.obj(x), k
     
     def __get_W(self, x, i, x_seq, M=3):

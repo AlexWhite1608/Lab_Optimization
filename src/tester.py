@@ -1,6 +1,6 @@
 from time import time
 from tabulate import tabulate
-import numpy as np
+import matplotlib.pyplot as plt
 from methods_implementation import (
     armijo_goldstein,
     armijo_ls,
@@ -10,7 +10,6 @@ from methods_implementation import (
     wolfe_ls,
 )
 
-#TODO: generalizza per bene il passaggio dei parametri!
 class GradientDescentTester:
     
     def __init__(self, problem_instances):
@@ -20,26 +19,27 @@ class GradientDescentTester:
 
         results = {}
 
+        # Parametri della ricerca goldstein per armijo-BB
         armijo_goldstein_params = {
-            'delta_k': 0.4,
+            'delta_k': 0.3,
             'delta': 0.1,
             'gamma1': 0.2,
-            'gamma2': 0.4
+            'gamma2': 0.3
         }
 
+        # Parametri della ricerca nm per armijo-BB
         armijo_nm_params={
-            'delta_k': 0.2,
+            'delta_k': 0.3,
             'delta': 0.1,
-            'gamma': 0.1,
+            'gamma': 0.3,
         }
 
-        # Lista dei metodi di ottimizzazione da testare
         optimization_methods = [
-            wolfe_ls.WolfeLS(gamma=0.2, sigma=0.3),
-            constant_stepsize.ConstantStepSize(learning_rate=0.001),
-            armijo_nm_ls.ArmijoNMLS(delta_k=0.4, delta=0.2, gamma=0.3),
-            armijo_goldstein.ArmijoGoldstein(delta_k=0.4, delta=0.1, gamma1=0.2, gamma2=0.4),
-            armijo_ls.ArmijoLS(delta_k=0.1, delta=0.2, gamma=0.4),
+            wolfe_ls.WolfeLS(parameters={'gamma': 0.2, 'sigma': 0.4, 'alpha_l': 0, 'alpha_u': 100}),
+            constant_stepsize.ConstantStepSize(parameters={'learning_rate': 0.01}),
+            armijo_nm_ls.ArmijoNMLS(parameters={'delta_k': 0.5, 'delta': 0.2, 'gamma': 0.3}),
+            armijo_goldstein.ArmijoGoldstein(parameters={'delta_k': 0.4, 'delta': 0.1, 'gamma1': 0.2, 'gamma2': 0.3}),
+            armijo_ls.ArmijoLS(parameters={'delta_k': 0.1, 'delta': 0.2, 'gamma': 0.3}),
             armijo_nm_bb.ArmijoNMBB(technique='AB', armijo_goldstein_params=armijo_goldstein_params, armijo_nm_params=armijo_nm_params)
         ]
 
