@@ -16,7 +16,7 @@ class ArmijoLS(gradient.GradientDescentMethod):
         print(f"{self._name}: {self._problem.name}")
 
         for i in range(self._max_iter):
-            gradient = self._problem.grad(x)
+            gradient = self.evaluate_gradient(x)
             if np.linalg.norm(gradient) < self._tol:
                 break
             step_size = self.__armijo_ls(x, gradient, self._delta_k, self._delta, self._gamma)
@@ -26,11 +26,9 @@ class ArmijoLS(gradient.GradientDescentMethod):
             self._x_history.append(x)
             self._obj_history.append(self._problem.obj(x))
 
-            print(f"{self._name}: {i+1}; (x,y): {x}")
+            print(f"{self._name}: Iteration {i}; x: {x}; Objective: {self._problem.obj(x)}")
 
         print("----------------------------------------------\n")
-
-        super().plot_results()
 
         self._x_history = []  
         self._obj_history = [] 
