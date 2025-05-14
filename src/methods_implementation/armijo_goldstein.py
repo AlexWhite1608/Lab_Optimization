@@ -13,8 +13,9 @@ class ArmijoGoldstein(gradient.GradientDescentMethod):
 
     def optimize(self):
         x = self._problem.x0
+        self._obj_history.append(self._problem.obj(x))
 
-        print(f"{self._name}: {self._problem.name}")
+        print(f"{self._name}: {self._problem.name}, starting point: {x}")
 
         for i in range(self._max_iter):
             gradient = self.evaluate_gradient(x)
@@ -31,22 +32,22 @@ class ArmijoGoldstein(gradient.GradientDescentMethod):
 
         print("----------------------------------------------\n")
 
-        self._x_history = []  
-        self._obj_history = [] 
+        #self._x_history = []  
+        #self._obj_history = [] 
 
         return self._problem.obj(x), i + 1
 
     def __armijo_goldstein_ls(self, x, gradient, delta_k, delta, gamma1, gamma2):
         alpha = delta_k
-        while self._problem.obj(x - alpha * gradient) > self._problem.obj(x) - gamma1 * alpha * np.linalg.norm(gradient)**2:
+        while self.evaluate_objective(x - alpha * gradient) > self.evaluate_objective(x) - gamma1 * alpha * np.linalg.norm(gradient)**2:
             alpha *= delta
 
         if alpha < delta_k:
             return alpha
         
         # Condizioni di Goldstein
-        goldstein_condition_1 = self._problem.obj(x - alpha * gradient) < self._problem.obj(x) - gamma2 * alpha * np.linalg.norm(gradient)**2 
-        goldstein_condition_2 = self._problem.obj(x - (alpha/delta) * gradient) < np.min([self._problem.obj(x - alpha * gradient), self._problem.obj(x) + gamma1 * (alpha/delta)*np.linalg.norm(gradient)**2])
+        goldstein_condition_1 = self.evaluate_objective(x - alpha * gradient) < self.evaluate_objective(x) - gamma2 * alpha * np.linalg.norm(gradient)**2 
+        goldstein_condition_2 = self.evaluate_objective(x - (alpha/delta) * gradient) < np.min([self.evaluate_objective(x - alpha * gradient), self.evaluate_objective(x) + gamma1 * (alpha/delta)*np.linalg.norm(gradient)**2])
 
         while goldstein_condition_1 and goldstein_condition_2:
             alpha /= delta

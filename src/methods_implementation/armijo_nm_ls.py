@@ -12,9 +12,10 @@ class ArmijoNMLS(gradient.GradientDescentMethod):
 
     def optimize(self):
         x = self._problem.x0
+        self._obj_history.append(self._problem.obj(x))
         x_seq = [] 
 
-        print(f"{self._name}: {self._problem.name}")
+        print(f"{self._name}: {self._problem.name}, starting point: {x}")
 
         for i in range(self._max_iter):
             gradient = self.evaluate_gradient(x)
@@ -32,8 +33,8 @@ class ArmijoNMLS(gradient.GradientDescentMethod):
 
         print("----------------------------------------------\n")
 
-        self._x_history = []  
-        self._obj_history = [] 
+        #self._x_history = []  
+        #self._obj_history = [] 
 
         return self._problem.obj(x), i + 1
     
@@ -41,7 +42,7 @@ class ArmijoNMLS(gradient.GradientDescentMethod):
         alpha = self._delta_k
         j=0
 
-        while self._problem.obj(x - alpha * gradient) > W - self._gamma * alpha * np.dot(gradient, gradient):
+        while self.evaluate_objective(x - alpha * gradient) > W - self._gamma * alpha * np.dot(gradient, gradient):
             alpha *= self._delta
             j += 1
 

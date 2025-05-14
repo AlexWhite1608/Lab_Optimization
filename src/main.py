@@ -6,16 +6,16 @@ import matplotlib.pyplot as plt
 def main():
 
     problem_instances = {
-            'BARD': pycutest.import_problem('BARD'),    
+            #'BARD': pycutest.import_problem('BARD'),    
             'BRKMCC': pycutest.import_problem('BRKMCC'),     
-            'ARGLINA': pycutest.import_problem('ARGLINA'),    
-            'DIXMAANB': pycutest.import_problem('DIXMAANB'),    
-            'BOX': pycutest.import_problem('BOX'),              
-            'BROYDN7D': pycutest.import_problem('BROYDN7D'),        
-            'CLIFF': pycutest.import_problem('CLIFF'), 
-            'HIMMELBCLS': pycutest.import_problem('HIMMELBCLS'),
-            'HAIRY': pycutest.import_problem('HAIRY'),
-            'BEALE': pycutest.import_problem('BEALE')
+            #'ARGLINA': pycutest.import_problem('ARGLINA'),    
+            #'DIXMAANB': pycutest.import_problem('DIXMAANB'),    
+            #'BOX': pycutest.import_problem('BOX'),              
+            #'BROYDN7D': pycutest.import_problem('BROYDN7D'),        
+            #'CLIFF': pycutest.import_problem('CLIFF'), 
+            #'HIMMELBCLS': pycutest.import_problem('HIMMELBCLS'),
+            #'HAIRY': pycutest.import_problem('HAIRY'),
+            #'BEALE': pycutest.import_problem('BEALE')
         }
     
     

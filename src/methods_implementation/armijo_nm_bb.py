@@ -3,25 +3,26 @@ import numpy as np
 
 class ArmijoNMBB(gradient.GradientDescentMethod):
 
-    def __init__(self, technique, armijo_goldstein_params={}, armijo_nm_params={}, sigma_a=1e-4, sigma_b=1e-4, M=15, N=10):
+    def __init__(self, technique, armijo_nm_params={}, sigma_a=1e-4, sigma_b=1e-4, M=3):
         super().__init__()
         self._technique = technique
-        self._armijo_goldstein_params = armijo_goldstein_params
         self._armijo_nm_params = armijo_nm_params
         self._sigma_a = sigma_a
         self._sigma_b = sigma_b
         self._M = M
-        self._N = N
         self._name = 'Barzilai-Borwein Line Search'
 
     def optimize(self):
         k = 0
         x = self._problem.x0
         self._x_history = [x]
-        self._obj_history = [self._problem.obj(x)]
+        self._obj_history.append(self._problem.obj(x))
+
         
         x_k_minus_1 = x
         grad_k_minus_1 = self.evaluate_gradient(x)
+
+        print(f"{self._name}: {self._problem.name}, starting point: {x}")
 
         while k < self._max_iter:
             gradient = self.evaluate_gradient(x)
@@ -33,15 +34,10 @@ class ArmijoNMBB(gradient.GradientDescentMethod):
             s = x - x_k_minus_1
             y = gradient - grad_k_minus_1
 
-            # Per evitare divisione per zero si aggiunge un epsilon
-            epsilon = 1e-8
-            mu = self.__get_mu(s, y, k, epsilon)
-            if mu == 0 or np.isnan(mu):
-                mu = self.__armijo_goldstein_ls(x, gradient)
+            mu = self.__get_mu(s, y, k)
+            d_k = -gradient / mu
 
-            d_k = -gradient / (mu + epsilon)  
-
-            alpha = self.__armijo_nm(x, gradient, d_k)
+            alpha = self.__armijo_nm(x, d_k)
 
             x_k_minus_1 = x
             grad_k_minus_1 = gradient
@@ -57,7 +53,8 @@ class ArmijoNMBB(gradient.GradientDescentMethod):
 
         return self._problem.obj(x), k
 
-    def __get_mu(self, s, y, k, epsilon):
+    def __get_mu(self, s, y, k):
+        epsilon = 1e-8
         s_dot_s = np.dot(s, s) + epsilon
         s_dot_y = np.dot(s, y) + epsilon
         y_dot_y = np.dot(y, y) + epsilon
@@ -74,32 +71,17 @@ class ArmijoNMBB(gradient.GradientDescentMethod):
         else:
             raise ValueError("Invalid mu technique")
 
-    def __armijo_nm(self, x, gradient, d_k):
-        alpha = self._armijo_nm_params.get('delta_k', 0.1)
-        delta = self._armijo_nm_params.get('delta', 0.5)
-        gamma = self._armijo_nm_params.get('gamma', 0.9)
-        W = self.__get_W(x)
+    def __armijo_nm(self, x, d_k):
+        alpha = self._armijo_nm_params.get('delta_k', 0.3)
+        delta = self._armijo_nm_params.get('delta', 0.4)
+        gamma = self._armijo_nm_params.get('gamma', 0.6)
+        W = self.__get_W()
 
-        while self._problem.obj(x + alpha * d_k) > W - gamma * alpha * np.dot(gradient, d_k):
+        while self.evaluate_objective(x + alpha * d_k) > W - gamma * alpha * np.dot(d_k, d_k):
             alpha *= delta
 
         return alpha
 
-    def __get_W(self, x):
+    def __get_W(self):
         values = [self._problem.obj(x) for x in self._x_history[-self._M:]]
-        return max(values) if values else self._problem.obj(x)
-
-    def __armijo_goldstein_ls(self, x, gradient):
-        delta_k = self._armijo_goldstein_params.get('delta_k', 0.1)
-        delta = self._armijo_goldstein_params.get('delta', 0.5)
-        gamma1 = self._armijo_goldstein_params.get('gamma1', 0.1)
-        gamma2 = self._armijo_goldstein_params.get('gamma2', 0.9)
-        alpha = delta_k
-
-        while self._problem.obj(x - alpha * gradient) > self._problem.obj(x) - gamma1 * alpha * np.linalg.norm(gradient)**2:
-            alpha *= delta
-
-        while self._problem.obj(x - alpha * gradient) < self._problem.obj(x) - gamma2 * alpha * np.linalg.norm(gradient)**2:
-            alpha /= delta
-
-        return alpha
+        return max(values) if values else self.evaluate_objective(self._x_history[-1])
